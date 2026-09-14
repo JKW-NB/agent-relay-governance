@@ -1,31 +1,32 @@
-# CHECKPOINT_项目断点.md（位于 _AI交接文件/）
+# CHECKPOINT.md — Resume Package（恢复现场用）
+
+> 本文件是 **resume memory**：只在 PAUSED / HOLD / agent handoff / session handoff / 中断 时生成或更新。
+> 普通状态变化**不需要**同步本文件（那是 V1 的负担）。恢复时以本文件为准恢复现场，
+> 若与 CURRENT_STATE.yaml 冲突，以 CURRENT_STATE 为准并记入 PROJECT_LOG。
 
 ```text
-状态               : IN_PROGRESS / PAUSED / PASS
-执行者             : agent-name（model）
-更新时间           : YYYY-MM-DD
-当前工作流         : G3 实证分析（嵌套协议管辖）
-嵌套当前阶段       : 05_XXX（READY）
-嵌套断点文件       : 子项目/阶段目录/CHECKPOINT_任务断点.md
+状态               : PAUSED / HOLD
+执行者             : <role + any model>
+更新时间           : YYYY-MM-DD HH:MM
+任务               : T-05-01 <一句话>
+暂停原因           : <具体原因 / blocker>
+
+现场快照           :
+  - 关键变量/数据状态（版本、路径、哈希如有）
+  - 内存中的临时结论（防止丢失）
 
 已完成步骤         :
-  - [工作流] 事项一句话（日期）
+  - <可核验步骤>
 
 未完成步骤         :
-  - [工作流] 事项一句话
+  - <剩余步骤>
 
-读取/创建/修改文件 :
-  - 修改：文件列表
-  - 创建：文件列表
+下一步准确操作     : <具体到文件/命令，接手者照做即可>
 
-最后成功操作       : 一句话
-最后成功结果       : 一句话（含可核验数字）
+恢复后必读         :
+  - <接手者除了 AGENTS.md + CURRENT_STATE.yaml 还要读什么>
 
-下一步准确操作     : 具体到文件/章节/命令，不能只写"继续分析"
-
-阻塞项             : 无 / 具体阻塞与解除条件
-已冻结决策         :
-  - 冻结决策条目
+阻塞项             : <无 / 具体阻塞与解除条件>
 ```
 
-暂停时："下一步准确操作"必须具体；完成后状态改 PASS；每次更新同步 5 处。
+恢复流程：读本文件 → 对照 CURRENT_STATE.yaml（不一致以 CURRENT_STATE 为准，记 PROJECT_LOG）→ 按"下一步准确操作"继续。

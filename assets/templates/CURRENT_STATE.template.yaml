@@ -1,48 +1,55 @@
-schema_version: 1
-project: "项目名称"
-timezone: "Asia/Shanghai"
-last_updated: "YYYY-MM-DD"
-last_agent: "agent-name"
+schema_version: 2
+project: "项目名"
+last_updated: "YYYY-MM-DD HH:MM"
+last_agent: "any-model-name"
 
-current_workstream:
-  id: "G3"
-  name: "当前工作流名"
-  status: "IN_PROGRESS"
-  governed_by: "嵌套协议路径（若有）"
-  nested_state_file: "子项目/CURRENT_STATE.yaml（若有）"
-  nested_stage: "当前阶段"
-  nested_stage_status: "READY"
-  exact_next_action: "下一步准确操作（文件/章节/命令）"
+# ============================================================
+# CURRENT_STATE.yaml = Canonical Working State（唯一权威的"现在"）
+# 冲突时本文件胜出（除 PROJECT_LOG 记录的事件历史外）。
+# 看板/状态总表是 derived views，允许滞后。
+# ============================================================
 
-workstreams:
-  - id: "G0"
-    name: "项目治理与交接层"
-    status: "PASS"
-    note: ""
-  - id: "G1"
-    name: "工作流2"
-    status: "NOT_STARTED"
-    note: ""
+current:
+  workstream: "G3"                 # 工作流 ID
+  stage: "05"                      # 阶段 ID
+  task:
+    id: "T-05-01"                  # 任务 ID（约定：T-<stage>-<seq>）
+    goal: "一句话目标"
+    role: "EXECUTOR"               # PLANNER | EXECUTOR | REVIEWER | AUDITOR（逻辑角色，不绑模型）
+    status: "IN_PROGRESS"          # 合法值见下
+    depends_on: ["T-04-01"]        # 已完成的前置任务（PASS 后才能开始本任务）
+    inputs: ["data/input.dta"]     # 相对项目根的输入文件
+    outputs: ["out/result.csv"]    # 本任务的产物
+    acceptance_criteria:           # 满足全部才算 PASS
+      - "N == 108"
+      - "wild p < 0.05"
+    attempt: 1
+    max_attempts: 3
+    blocker: null                  # null 或 {type: STATE_CONFLICT|DECISION_CONFLICT|EVIDENCE_CONFLICT|..., detail: "..."}
+    last_failure: null             # 上次失败摘要（证据）
+    recovery_action: null          # 下次要换什么做法
+    escalation: "HOLD if attempt > max_attempts"
+    exact_next_action: "具体到文件/命令的下一步"
 
-governance:
-  mode: "SERIAL_HANDOFF"
-  root_ai_handoff_dir: "_AI交接文件/"
-  root_central_log: "_AI交接文件/PROJECT_LOG_工作日志.md"
-  root_progress_board: "进度看板.md（根目录）"
-  root_checkpoint: "_AI交接文件/CHECKPOINT_项目断点.md"
-  root_stage_table: "_AI交接文件/项目阶段状态总表.md"
-  nested_protocol: "子项目/AGENTS.md（若有）"
-  log_protocol: "MANDATORY"
-  pause_requires_checkpoint: true
-  resume_requires_log_event: true
+context:
+  required:                        # 除 AGENTS.md + 本文件外，必读
+    - "stages/05_spec.md"
+  conditional:                     # 按状态/任务性质决定
+    - when: "status in [PAUSED, HOLD]"
+      load: ["CHECKPOINT.md"]
+    - when: "task involves frozen design"
+      load: ["DECISIONS.md"]
+    - when: "first contact after handoff"
+      load: ["PROJECT_LOG.md"]     # 只读末尾相关记录
+  do_not_preload:                  # 人看的视图，不预加载
+    - "PROGRESS_BOARD.md"
+    - "STAGE_TABLE.md"
 
-handoff:
-  read_first:
-    - "AGENTS.md（根目录）"
-    - "_AI交接文件/CURRENT_STATE.yaml"
-    - "进度看板.md（根目录）"
-    - "_AI交接文件/PROJECT_LOG_工作日志.md（末尾最新）"
-    - "_AI交接文件/CHECKPOINT_项目断点.md"
-    - "_AI交接文件/项目阶段状态总表.md"
-    - "若任务落入子项目目录：继续按嵌套 AGENTS.md 顺序读"
-  blockers: []
+blockers: []                       # 项目级阻塞（非任务级）
+
+# ------------------------------------------------------------
+# 状态值：NOT_STARTED / READY / IN_PROGRESS / PAUSED / PASS / HOLD / LOCKED
+# 冲突不新增状态：用 task.blocker.type 表达。
+# PAUSED/HOLD 时 CHECKPOINT 必须存在且本文件 status 一致。
+# PASS 时 PROJECT_LOG 末尾必须有带验证证据的 END 记录。
+# ------------------------------------------------------------

@@ -93,4 +93,4 @@ plus: log entry, board update, SHA256 manifest rows for the aggregated table (so
 - [ ] No ID lost in merge (original count == written-back count)
 - [ ] Validity: no missing start/end, no start > end, no title-term contradictions
 - [ ] Aggregation spot-check passed
-- [ ] Gate JSON flipped, manifest updated, 5-place sync done
+- [ ] Gate JSON flipped, manifest updated, CURRENT_STATE + PROJECT_LOG refreshed (derived views may follow later)

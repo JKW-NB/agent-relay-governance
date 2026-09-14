@@ -12,10 +12,12 @@
 
 ## 1. State sync omissions (most common failure)
 
-Symptom: work is done and logged, but other state files still say the old thing (e.g., "pending human review" after the review closed).
+Symptom: work is done and logged, but CURRENT_STATE or derived views still say the old thing (e.g., "pending human review" after the review closed).
 
-- The 5-place sync is the completion standard, not a nice-to-have. After finishing, grep all 5 files for stale phrases (task name, "pending", "待复核") and update every hit.
-- A human asking "is everything updated?" usually means one of the 5 places was missed. Verify with grep, not memory.
+- In V2, state lives in ONE canonical place (CURRENT_STATE.yaml) plus the append-only log. Derived views (board, stage table) may lag — that is by design. What must NEVER lag: CURRENT_STATE and PROJECT_LOG.
+- After finishing, update CURRENT_STATE.yaml immediately, append the log event, and refresh derived views opportunistically. Grep CURRENT_STATE for stale phrases (task name, "pending", "待复核") before declaring done.
+- A human asking "is everything updated?" usually means CURRENT_STATE wasn't refreshed or a derived view contradicts it. Verify with grep, not memory.
+- V1 legacy note: the old "five-place sync" failure mode (one of 5 files missed) is exactly what V2's single-source-of-truth removes. Derived views are now allowed to lag, explicitly.
 
 ## 2. PowerShell `-f` formatting trap
 

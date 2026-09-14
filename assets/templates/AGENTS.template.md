@@ -1,39 +1,37 @@
-# AGENTS.md：项目名（模板）
+# AGENTS.md：项目名（模板 V2）
 
 本目录是[项目性质一句话]。所有 LLM/Agent/自动化执行者必须遵守本文件。
 
-## 0. 项目级治理与交接协议（全库生效）
+## 0. 治理协议（全库生效）
 
-任何 Agent 在本库任何位置开始任务前：
+任何 Agent 开始任务前：
 
-1. 按顺序读：根 `AGENTS.md` → `_AI交接文件/CURRENT_STATE.yaml` → 根进度看板 → `_AI交接文件/PROJECT_LOG_工作日志.md`（末尾最新）→ `_AI交接文件/CHECKPOINT_项目断点.md` → `_AI交接文件/项目阶段状态总表.md`。
-2. 若任务落入[子项目目录]，继续按嵌套 AGENTS.md 的顺序读其全部交接文件；该目录内一切操作以嵌套协议为准。
-3. 不得仅凭聊天上下文推断进度；一次一个执行者，从断点继续，不另建重复文件。
+1. 必读两个文件：本 `AGENTS.md` → `_AI交接文件/CURRENT_STATE.yaml`。
+2. 然后按 CURRENT_STATE 的 `context.required` / `context.conditional` 决定继续读什么（CHECKPOINT / DECISIONS / PROJECT_LOG / 阶段说明）。
+3. 不得仅凭聊天上下文推断进度；一次一个执行者；从 CURRENT_STATE 与 CHECKPOINT 续接，不另建重复文件。
 
-> 说明：`_AI交接文件/` 存放机器交接状态文件；`AGENTS.md` 必须留根目录（工具自动发现机制），其第 1 条读取顺序显式前置。
+> `AGENTS.md` 必须留在根目录（工具自动发现机制）。机器交接文件在 `_AI交接文件/`。
 
-- **双层从属**：根级文件只记工作流粒度指针；子项目细节只在嵌套目录维护，两套文件不互相复制。
-- **状态允许值**：`NOT_STARTED` / `READY` / `IN_PROGRESS` / `PAUSED` / `PASS` / `HOLD` / `LOCKED`。
-- **同步规则**：状态变化同步更新 5 处——`CURRENT_STATE.yaml`、`CHECKPOINT`、阶段状态总表、日志（只能追加，纠错用 `CORRECTION`）、看板。
-- **暂停必须写 CHECKPOINT 并把状态改为 `PAUSED`；完成先验证再写 `PASS`。**
+- **记忆模型**：CURRENT_STATE=现在在哪；CHECKPOINT=怎么恢复；PROJECT_LOG=发生过什么；DECISIONS=为什么；LESSONS=怎么做。同一事实只有一个 authoritative owner。
+- **冲突裁决**：证据 > DECISIONS 中 ACTIVE/FROZEN 决策 > HOLD 人工仲裁。禁止投票/静默覆盖。
+- **状态值**：`NOT_STARTED / READY / IN_PROGRESS / PAUSED / PASS / HOLD / LOCKED`。
+- **暂停**：写 CHECKPOINT + CURRENT_STATE 置 PAUSED + PROJECT_LOG 追加。
+- **完成**：先验证（含 `python scripts/validate_governance.py`）再写 PASS + 带证据的 END 日志。
 
 ## 1. 文档权威层级
 
-- 历史稿（`_历史稿归档/`）禁止作为当前口径；与现行文件冲突时以现行文件为准。
+- 历史稿（`_历史稿归档/`）禁止作为当前口径。
 - 当前核心文件：[列出]。
 
-## 2. 冻结事项（不得改动）
+## 2. 冻结决策
 
-```text
-[冻结的设计/数据/结论，如：核心变量定义、模型设定、样本规则]
-```
+见 `DECISIONS.md` 中 status=FROZEN 的条目，不得擅自更改；推翻需人工批准。
 
 ## 3. 文件写入边界
 
-- 代码/日志/结果写入对应阶段目录。
-- 权威输入为 READ_ONLY_SOURCE，不得修改。
-- 数据归档遵循复制不移动、SHA256 清单规则。
+- 代码/日志/结果写入对应阶段目录；权威输入 READ_ONLY_SOURCE。
+- 数据归档：复制不移动、SHA256 清单、CSV 用 UTF-8 BOM。
 
 ## 4. 子项目治理（若有嵌套）
 
-- 子项目目录有嵌套 AGENTS.md，任何 Agent 在该目录工作时按嵌套协议读取顺序执行。
+- 子项目目录有嵌套 AGENTS.md；进入该目录按嵌套协议 + 其 CURRENT_STATE 续接。

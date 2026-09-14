@@ -1,42 +1,30 @@
-# PROJECT_LOG_工作日志.md（根级中央日志，位于 _AI交接文件/）
+# PROJECT_LOG.md — Episodic History（发生过什么）
 
-> 规则：只能追加，不静默改写历史。纠错用 `CORRECTION` 追加。记录可核验操作/证据/决策，不记录内部思维。
-> 嵌套目录内操作记入其自己的日志；本日志只记工作流级摘要与根级操作。
-
----
-
-## YYYY-MM-DD
-
-### START：任务名
-
-1. 可核验操作 1（文件、命令、结果数字）。
-2. 可核验操作 2。
-3. 决策与依据。
-
-### END：任务名
-
-- 验证结果（跑过什么、数字多少、通过与否）。
-- 5 处同步完成声明。
-- 状态：`PASS` / `HOLD`
+> 本文件是 **canonical event history**：append-only，记录已发生的事件。
+> 不承担"当前状态"（那是 CURRENT_STATE.yaml 的职责）。纠错用 `CORRECTION` 追加，不删改历史。
 
 ---
 
-### 日志条目模板（每次操作结束前必写）
+## 日志条目格式
 
 ```text
-## YYYY-MM-DD HH:MM | AGENT | TASK_ID | START/RESUME/END/CORRECTION
+## YYYY-MM-DD HH:MM | ROLE | TASK_ID | START / RESUME / END / CHECKPOINT / CORRECTION
 
-**任务：**
-- 一句话任务描述与边界。
-
-**完成：**
+**事件：**
 - 可核验的操作与证据（文件、哈希、数字、验证结果）。
 
 **状态：**
 \`\`\`text
-STAGE_STATUS = ...
-NO_FROZEN_DESIGN_CHANGE = YES/NO
+<简短状态指针：本事件后 CURRENT_STATE 变成了什么>
 \`\`\`
 ```
+
+## 规则
+
+1. 每个任务：START 开始、END 结束；END 必须含验证证据（跑了什么、结果如何）。
+2. PAUSED/HOLD 写 CHECKPOINT 条目并指向 CHECKPOINT.md。
+3. 形成决策 → 记事件 + 写 DECISIONS.md；踩坑 → 记事件 + 写 LESSONS.md。
+4. 状态变化 → 记事件 + 更新 CURRENT_STATE.yaml（本日志不替代 CURRENT_STATE）。
+5. 纠错：追加 `CORRECTION` 条目说明原记录何处有误，不改原文。
 
 *日志尾部即最新记录。*

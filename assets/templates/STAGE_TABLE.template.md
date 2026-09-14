@@ -1,21 +1,22 @@
-# 项目阶段状态总表（全库）
+# 项目阶段状态总表（derived view）
 
-> 根目录治理层的阶段地图。嵌套子项目用其内部阶段状态总表，两表不互相复制内容。
+> **Derived view**：本表内容派生自 `CURRENT_STATE.yaml`（derived_from: CURRENT_STATE.yaml @ YYYY-MM-DD）。
+> 允许滞后；**冲突时以 CURRENT_STATE.yaml 为准**。本表不承担权威状态，仅供人快速浏览。
 
 | 工作流 | 状态 | 启动条件 | 完成标志 | 管辖 |
 |---|---|---|---|---|
-| G0 项目治理与交接层 | PASS | 根 AGENTS.md 生效 | 根 5 文件齐全且读取顺序有效 | 根目录协议 |
-| G1 工作流2 | NOT_STARTED | 启动条件 | 完成标志 | 管辖文件 |
+| G0 项目治理与交接层 | PASS | 根 AGENTS.md 生效 | validator 通过 | 根目录协议 |
 | G3 子项目 | IN_PROGRESS | 启动条件 | 完成标志 | 嵌套协议 |
 
 ## 当前指针
 
 ```text
-CURRENT_WORKSTREAM = G3
-NEXT_EMPIRICAL_ACTION = 具体下一步
+（从 CURRENT_STATE.yaml 摘录，非权威）
+CURRENT_WORKSTREAM = ...
+CURRENT_TASK       = ...
 ```
 
-## 双层关系
+## 维护规则
 
-- 根级文件只记工作流粒度；子项目细节以嵌套协议文件为准。
-- 嵌套目录内工作：状态同步走嵌套协议的 5 处；根日志仅在工作流级别（阶段开始/完成/阻塞）追加一行摘要。
+- 状态变化后可以滞后更新本表（给人看），但 CURRENT_STATE.yaml 与 PROJECT_LOG 必须即时更新。
+- 若本表与 CURRENT_STATE 不一致且造成困惑：删掉本表对应行或标注"以 CURRENT_STATE 为准"，而不是修改 CURRENT_STATE 来迁就本表。
