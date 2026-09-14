@@ -1,0 +1,48 @@
+schema_version: 1
+project: "项目名称"
+timezone: "Asia/Shanghai"
+last_updated: "YYYY-MM-DD"
+last_agent: "agent-name"
+
+current_workstream:
+  id: "G3"
+  name: "当前工作流名"
+  status: "IN_PROGRESS"
+  governed_by: "嵌套协议路径（若有）"
+  nested_state_file: "子项目/CURRENT_STATE.yaml（若有）"
+  nested_stage: "当前阶段"
+  nested_stage_status: "READY"
+  exact_next_action: "下一步准确操作（文件/章节/命令）"
+
+workstreams:
+  - id: "G0"
+    name: "项目治理与交接层"
+    status: "PASS"
+    note: ""
+  - id: "G1"
+    name: "工作流2"
+    status: "NOT_STARTED"
+    note: ""
+
+governance:
+  mode: "SERIAL_HANDOFF"
+  root_ai_handoff_dir: "_AI交接文件/"
+  root_central_log: "_AI交接文件/PROJECT_LOG_工作日志.md"
+  root_progress_board: "进度看板.md（根目录）"
+  root_checkpoint: "_AI交接文件/CHECKPOINT_项目断点.md"
+  root_stage_table: "_AI交接文件/项目阶段状态总表.md"
+  nested_protocol: "子项目/AGENTS.md（若有）"
+  log_protocol: "MANDATORY"
+  pause_requires_checkpoint: true
+  resume_requires_log_event: true
+
+handoff:
+  read_first:
+    - "AGENTS.md（根目录）"
+    - "_AI交接文件/CURRENT_STATE.yaml"
+    - "进度看板.md（根目录）"
+    - "_AI交接文件/PROJECT_LOG_工作日志.md（末尾最新）"
+    - "_AI交接文件/CHECKPOINT_项目断点.md"
+    - "_AI交接文件/项目阶段状态总表.md"
+    - "若任务落入子项目目录：继续按嵌套 AGENTS.md 顺序读"
+  blockers: []

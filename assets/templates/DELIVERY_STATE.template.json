@@ -1,0 +1,12 @@
+{
+  "formal_main_target": 0,
+  "auto_passed": 0,
+  "pending_human_review": 0,
+  "scoring_failed": 0,
+  "formal_ready": false,
+  "blocking_reasons": [
+    "N_ITEMS_SCORING_REVIEWS_PENDING",
+    "N_ITEMS_VALIDITY_PERIODS_PENDING"
+  ],
+  "_usage": "机器编码交付的状态文件。blocking_reasons 非空 = 聚合闸门关闭，数据不得进入回归；全部清空并将 formal_ready 置 true 后才可聚合。"
+}
