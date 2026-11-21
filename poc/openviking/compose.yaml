@@ -1,0 +1,17 @@
+services:
+  ollama:
+    image: ollama/ollama@sha256:0e59999e0e8f9fd4e704bd788a89b7e4cad399367fb1365f8c102ac662288761
+    volumes:
+      - type: bind
+        source: ${ARG_POC_STACK_HOME}/ollama
+        target: /root/.ollama
+  openviking:
+    image: ghcr.io/volcengine/openviking@sha256:57d3fd8873dbb78e5ccfdc57481006e6fbe765390ea18cd4a6b2f62da8aa104d
+    environment:
+      OPENVIKING_WITH_BOT: "0"
+    ports:
+      - "127.0.0.1:${ARG_POC_STACK_PORT}:1933"
+    volumes:
+      - type: bind
+        source: ${ARG_POC_STACK_HOME}/ov
+        target: /app/.openviking

@@ -77,6 +77,8 @@ context:
 
 Never dump the whole log/board/history into context by default.
 
+If project instructions explicitly enable OpenViking and the task needs historical evidence, use [the optional read-only lookup](integrations/openviking/README.md) after required local context. Verify the returned lines in their owning local file. Follow the normal local context and blocker rules if retrieval is disabled, unavailable, or yields no verified evidence.
+
 ## Task contract (inside CURRENT_STATE.yaml)
 
 The handoff unit is a **task contract**, not a free-text note. Next agent must know goal, inputs, outputs, dependencies, and done-criteria:

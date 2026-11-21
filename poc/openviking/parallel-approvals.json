@@ -1,0 +1,5 @@
+[
+  {"id":"APPROVAL-027","matter_id":"ARCHIVE-VERIFY","type":"approval","effective_on":"2026-10-08","value":"Riley Chen","supersedes":null,"text":"APPROVAL-027 ARCHIVE-VERIFY. Riley Chen approved SHA-256 relay archive verification."},
+  {"id":"APPROVAL-028","matter_id":"ARCHIVE-VERIFY","type":"approval","effective_on":"2026-10-11","value":null,"supersedes":"APPROVAL-027","text":"APPROVAL-028 ARCHIVE-VERIFY. Authorization withdrawn effective 2026-10-11. Supersedes APPROVAL-027."},
+  {"id":"APPROVAL-031","matter_id":"BACKUP-VERIFY","type":"approval","effective_on":"2026-10-09","value":"Dana Park","supersedes":null,"text":"APPROVAL-031 BACKUP-VERIFY. Dana Park approved SHA-256 relay backup verification."}
+]

@@ -1,78 +1,65 @@
-# Agent Relay Governance (V2)
+# Agent Relay Governance (ARG V2)
 
-> 轻量、文件驱动、模型无关、Git 友好的 Long-horizon Agent Governance Protocol。
-> A file-driven, model-agnostic governance protocol for long-horizon multi-agent projects — a protocol, **not** an agent runtime.
+用于长周期项目的文件化交接协议与 Agent Skill。多个 Agent 可以按顺序接手同一项目，通过 Git 和普通文件恢复进度、检查验收依据，并追溯关键决策。
 
-[English](#what-it-is) | [中文](#它是什么)
+ARG 的基本流程只依赖本地治理文件。需要查找分散的历史证据时，项目可以额外启用 OpenViking。
 
-## What it is
+[快速开始](#快速开始) · [治理文件](#治理文件) · [OpenViking 接入](#可选接入-openviking) · [English overview](#english-overview)
 
-When multiple AI agents work **sequentially** on one project, four things go wrong: state loss between handoffs, drift (each agent re-does prior work), unverifiable machine-encoded data entering analysis, and untraceable files. This repository encodes a battle-tested protocol that prevents all four — extracted from a real master's-thesis project where three agent platforms took turns for months without losing continuity.
+## 快速开始
 
-**It is not AutoGen / CrewAI / LangGraph.** No orchestrator service, no framework dependency, no default parallelism. Serial handoff only. Any agent tool (Claude Code, Codex, opencode, GPT) can use it, because all state lives in plain files.
+1. 克隆仓库。将其放到你的 Agent 支持的 Skill 目录，或在项目说明中明确让接手者读取本仓库的 [SKILL.md](SKILL.md)。
+2. 从 [模板目录](assets/templates/) 复制 `AGENTS.template.md` 和 `CURRENT_STATE.template.yaml` 到项目根目录，分别命名为 `AGENTS.md` 和 `CURRENT_STATE.yaml`。填写当前任务、输入、输出、验收条件和下一步。按项目需要初始化日志、断点和决策文件。
+3. 每次接手先读 `AGENTS.md` 和 `CURRENT_STATE.yaml`，再根据 `context.required` 和 `context.conditional` 加载所需材料。暂停、阻塞或移交时，用 `CHECKPOINT.md` 保存恢复现场。
+4. 用仓库里的原生验证器检查项目。将示例中的两个路径换成实际位置。
 
-## 它是什么
+```bash
+git clone https://github.com/JKW-NB/agent-relay-governance.git
+python path/to/agent-relay-governance/scripts/validate_governance.py --project-root path/to/your-project --check-hashes
+```
 
-多个 AI Agent 顺序协同一个项目时，四大风险：交接丢状态、各干各的、机器编码数据未经人工复核进分析、文件无可追溯。本仓库是一套实战验证过的治理协议，解决全部四个问题。它不是多 Agent 编排框架，不依赖任何外部框架，所有状态都在普通文件里，任何 agent 工具都能用。
+验证器使用 Python 标准库，覆盖状态、依赖、验收记录和 SHA-256 清单等一致性检查。以命令输出的 `GOVERNANCE_VALIDATION = PASS` 或 `FAIL` 判断结果。规则细节见 [SKILL.md](SKILL.md)，旧项目升级步骤见 [V1 到 V2 迁移指南](references/migration-v1-to-v2.md)。
 
-## Core design (V2)
+## 治理文件
 
-| 设计 | 内容 |
+| 文件 | 职责 |
 |---|---|
-| **Memory model** | `CURRENT_STATE`=现在在哪；`CHECKPOINT`=怎么恢复；`PROJECT_LOG`=发生过什么；`DECISIONS`=为什么；`LESSONS`=怎么做。每种事实只有一个权威 owner。 |
-| **Single source of truth** | 状态只写在 CURRENT_STATE.yaml；日志 append-only；看板/状态总表是 derived views（可滞后，冲突时以 CURRENT_STATE 为准）。 |
-| **Task contract** | 交接单元是结构化任务契约：goal / role / inputs / outputs / acceptance_criteria / depends_on / attempt / max_attempts / blocker / next_action。 |
-| **Selective context loading** | Agent 只先读 AGENTS.md + CURRENT_STATE.yaml，然后按 context.required/conditional 按需加载，不预载全部历史。 |
-| **Conflict resolution** | 证据 > FROZEN 决策 > HOLD 人工仲裁。禁止投票、禁止静默覆盖。 |
-| **Roles, not models** | PLANNER / EXECUTOR / REVIEWER / AUDITOR 是逻辑角色，任何模型都能承担。 |
-| **Verifiable** | `python scripts/validate_governance.py` 检查状态机、任务契约、依赖、验证证据、冻结决策、SHA256 等 12 类一致性。 |
+| `AGENTS.md` | 项目规则、角色和交接要求 |
+| `CURRENT_STATE.yaml` | 当前任务、状态、阻塞和下一步的权威记录 |
+| `CHECKPOINT.md` | 暂停或交接时的恢复现场 |
+| `PROJECT_LOG.md` | 追加式事件历史与验收证据 |
+| `DECISIONS.md` | 决策、理由和冻结状态 |
+| `LESSONS.md` | 可复用的项目经验和操作规则 |
+| `PROGRESS_BOARD.md`、`STAGE_TABLE.md` | 供人查看的派生视图 |
+| `DELIVERY_STATE.json` | 机器编码数据的人工复核与关闸状态 |
 
-## Install
+角色分为规划、执行、复核和审计，可以由不同模型承担。任务推进依据结构化验收条件，冻结决策的变更需要人工批准并留痕。数据交付细节见 [人工复核流程](references/human-review-workflow.md) 和 [归档规则](references/data-archiving.md)。
 
-```bash
-git clone https://github.com/JKW-NB/agent-relay-governance.git \
-  ~/.config/opencode/skills/agent-relay-governance
-# or ~/.claude/skills/agent-relay-governance
-```
+## 可选接入 OpenViking
 
-## Structure
+OpenViking 是面向 AI Agent 的开源上下文数据库。它用类似文件系统的目录组织文档、记忆和技能，并支持在指定目录内按语义检索。了解项目和安装方式可访问 [OpenViking 官方 GitHub 仓库](https://github.com/volcengine/OpenViking)。
 
-```
-├── SKILL.md                      # Core protocol (triggers: 多agent串行接力 / agent handoff / governance ...)
-├── scripts/
-│   └── validate_governance.py    # Machine validator (pure stdlib, no pip)
-├── references/
-│   ├── human-review-workflow.md  # Machine-encoded data → human review → gate close
-│   ├── data-archiving.md         # SHA256 manifest maintenance
-│   ├── pitfalls.md               # Skill-level lessons (8 failure modes)
-│   └── migration-v1-to-v2.md     # V1 → V2 compatibility guide
-└── assets/templates/             # 9 fill-in governance file templates
-    ├── AGENTS.template.md
-    ├── CURRENT_STATE.template.yaml   (schema v2: task contract + context loading)
-    ├── CHECKPOINT.template.md        (resume package)
-    ├── PROJECT_LOG.template.md       (append-only event history)
-    ├── DECISIONS.template.md         (decision memory)
-    ├── LESSONS.template.md           (procedural memory)
-    ├── STAGE_TABLE.template.md       (derived view)
-    ├── PROGRESS_BOARD.template.md    (derived view, human-facing)
-    └── DELIVERY_STATE.template.json  (gate-close status)
-```
+OpenViking 适用于接手时追查旧决策、复核依据或变更记录。启用后，Agent 先完成 ARG 要求的本地上下文读取，再按需检索历史证据。适配器会核对已登记的本地文件及其 SHA-256，并返回可以在原文定位的摘录、文件路径和行号。当前任务状态、冻结决策和验收仍由各自的 ARG 治理文件及流程决定。
 
-## Quick validation
+1. 启动本机 OpenViking，将允许检索的历史资料副本导入项目专用范围。
+2. 以 [配置样例](integrations/openviking/config.example.json) 为起点，填写本机地址、检索范围、来源路径和哈希。样例默认关闭，配置完成后由项目显式启用。
+3. 在项目说明中记录配置位置。从仓库根目录运行下面的命令，按需替换路径和问题。
 
 ```bash
-cd your-project
-python path/to/scripts/validate_governance.py --check-hashes
+python integrations/openviking/retrieve.py --project-root path/to/your-project --config path/to/openviking.json "What evidence supported the previous decision?"
 ```
 
-Expect `GOVERNANCE_VALIDATION = PASS` (warnings allowed, errors fail).
+服务不可达或缺少可核验证据时，按 ARG 的本地流程处理。有必要证据才能推进的任务应记录阻塞。交接预检、操作者审阅和原生验证器的调用方式见 [集成说明](integrations/openviking/README.md)。
 
-## Invariants
+### 验证状态
 
-```text
-SERIAL HANDOFF · MODEL AGNOSTIC · FILE DRIVEN · NO AGENT FRAMEWORK
-AUDITABLE · RESUMABLE · VERIFIABLE · HUMAN CAN OVERRIDE
-```
+本机已验证来源核验、服务不可达时的本地降级，以及操作者审阅后调用 ARG 原生验证器。以本仓库自身的真实工程记录做的一项交接试点中，纯本地与 OpenViking 路径均找到了目标证据，模型在两种路径上都未正确提出下一步。操作者随后核验原始报告并通过后续回归。现有结果支持把 OpenViking 用作可选的历史证据检索，真实长周期项目中的效率收益仍待验证。
+
+## English overview
+
+Agent Relay Governance (ARG) is a file-based protocol and Agent Skill for sequential handoffs. Start with [SKILL.md](SKILL.md) and the [project templates](assets/templates/). Read the project’s instructions and canonical state first, then load the evidence required by the active task. Use the native validator to check consistency before advancing the project.
+
+[OpenViking integration](integrations/openviking/README.md) is opt-in. It retrieves historical excerpts and verifies them against registered local sources. ARG governance files retain authority over task state and decisions. The local workflow remains available when the service is unavailable.
 
 ## License
 

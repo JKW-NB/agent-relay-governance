@@ -1,0 +1,20 @@
+{
+  "records": [
+    {"id": "ASSIGN-013", "type": "assignment", "effective_on": "2026-10-01", "value": "Morgan Lee", "supersedes": null},
+    {"id": "ASSIGN-014", "type": "assignment", "effective_on": "2026-10-09", "value": "Casey Wu", "supersedes": "ASSIGN-013"},
+    {"id": "APPROVAL-027", "type": "approval", "effective_on": "2026-10-08", "value": "Riley Chen", "supersedes": null},
+    {"id": "APPROVAL-028", "type": "approval", "effective_on": "2026-10-11", "value": null, "supersedes": "APPROVAL-027"},
+    {"id": "DEPLOY-041", "type": "deployment", "effective_on": "2026-10-14", "value": "2026-10-13", "supersedes": null},
+    {"id": "DEPLOY-042", "type": "deployment", "effective_on": "2026-10-15", "value": "2026-10-12", "supersedes": "DEPLOY-041"}
+  ],
+  "cases": [
+    {"name":"before reassignment","type":"assignment","as_of":"2026-10-08","ids":["ASSIGN-014","ASSIGN-013"],"expected":["active","Morgan Lee","ASSIGN-013"]},
+    {"name":"after reassignment","type":"assignment","as_of":"2026-10-09","ids":["ASSIGN-013","ASSIGN-014"],"expected":["active","Casey Wu","ASSIGN-014"]},
+    {"name":"before revocation","type":"approval","as_of":"2026-10-10","ids":["APPROVAL-028","APPROVAL-027"],"expected":["active","Riley Chen","APPROVAL-027"]},
+    {"name":"after revocation","type":"approval","as_of":"2026-10-11","ids":["APPROVAL-027","APPROVAL-028"],"expected":["revoked",null,"APPROVAL-028"]},
+    {"name":"before deployment correction","type":"deployment","as_of":"2026-10-14","ids":["DEPLOY-042","DEPLOY-041"],"expected":["active","2026-10-13","DEPLOY-041"]},
+    {"name":"after deployment correction","type":"deployment","as_of":"2026-10-15","ids":["DEPLOY-041","DEPLOY-042"],"expected":["active","2026-10-12","DEPLOY-042"]},
+    {"name":"missing predecessor","type":"assignment","as_of":"2026-10-10","ids":["ASSIGN-014"],"expected":["incomplete_chain",null,null]},
+    {"name":"missing evidence","type":"approval","as_of":"2026-10-07","ids":["APPROVAL-027","APPROVAL-028"],"expected":["no_effective_record",null,null]}
+  ]
+}
